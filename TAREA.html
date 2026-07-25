@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Física de la Tensión Superficial y Tensioactivos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        canvas {
+            display: block;
+            background: #111827; /* Dark elegant theme */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-between">
+
+    <header class="bg-gray-800 border-b border-gray-700 py-4 px-6 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-blue-400">Tensión Superficial & Surfactantes</h1>
+                <p class="text-xs md:text-sm text-gray-400">Guía interactiva y explicación molecular del experimento de la pimienta y el jabón</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="bg-blue-900/50 border border-blue-700 text-blue-300 text-xs px-3 py-1.5 rounded-full font-semibold">Mecánica de Fluidos</span>
+                <span class="bg-green-900/50 border border-green-700 text-green-300 text-xs px-3 py-1.5 rounded-full font-semibold">Química Intermolecular</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+        
+        <!-- Panel Izquierdo: Simulación Interactiva -->
+        <div class="lg:col-span-7 bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden flex flex-col shadow-lg">
+            <div class="p-4 bg-gray-800/80 border-b border-gray-700 flex justify-between items-center">
+                <span class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
+                    Simulador Molecular en Tiempo Real
+                </span>
+                <div class="flex gap-2">
+                    <button id="btn-reset" class="px-3 py-1 text-xs font-semibold bg-gray-700 hover:bg-gray-600 active:bg-gray-550 rounded-lg transition">
+                        Reiniciar
+                    </button>
+                    <button id="btn-soap" class="px-3 py-1 text-xs font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-lg transition shadow-md shadow-blue-900/20">
+                        Añadir Jabón
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contenedor del Canvas -->
+            <div class="relative flex-grow min-h-[300px] bg-gray-950">
+                <canvas id="canvas-physics" class="w-full h-full"></canvas>
+                
+                <!-- Leyenda flotante sobre el canvas -->
+                <div class="absolute bottom-4 left-4 bg-gray-900/90 border border-gray-700/80 p-3 rounded-xl text-xs space-y-1.5 backdrop-blur-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3.5 h-3.5 rounded-full bg-blue-500 opacity-80 inline-block"></span>
+                        <span>Moléculas de Agua (Polar: H₂O)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3.5 h-1.5 bg-blue-400 inline-block rounded-full"></span>
+                        <span class="text-blue-300">Puentes de Hidrógeno (Alta Cohesión)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block border-r-4 border-gray-400"></span>
+                        <span>Molécula de Jabón (Anfipática)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-900 inline-block"></span>
+                        <span>Partícula de Pimienta (Flotante)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Explicación Científica Dinámica -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- Controles de Pasos Explicativos -->
+            <div class="bg-gray-800 p-4 rounded-2xl border border-gray-700 space-y-3">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Fases del Experimento</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="step-1" class="step-btn py-2 text-xs font-medium rounded-xl border border-blue-500 bg-blue-950/40 text-blue-300 text-center transition">
+                        1. Red de Agua
+                    </button>
+                    <button id="step-2" class="step-btn py-2 text-xs font-medium rounded-xl border border-gray-700 hover:border-gray-600 text-gray-400 text-center transition">
+                        2. El Jabón
+                    </button>
+                    <button id="step-3" class="step-btn py-2 text-xs font-medium rounded-xl border border-gray-700 hover:border-gray-600 text-gray-400 text-center transition">
+                        3. Ruptura y Arrastre
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de Texto Explicativo (Cambia según el paso) -->
+            <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 flex-grow flex flex-col justify-between shadow-lg">
+                <div id="explanation-content" class="space-y-4">
+                    <!-- El contenido se inyecta dinámicamente con JS -->
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-700/60 text-xs text-gray-400 flex items-center justify-between">
+                    <span>Estado del Sistema:</span>
+                    <span id="system-status" class="font-bold text-green-400">Tensión Superficial Alta</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 border-t border-gray-700 py-3 px-6 text-center text-xs text-gray-500">
+        Diseñado para la redacción científica y demostraciones de laboratorio físico-químico.
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('canvas-physics');
+        const ctx = canvas.getContext('2d');
+
+        // Estado físico global
+        let state = {
+            step: 1, // 1: Inicial, 2: Jabón cayendo, 3: Marangoni/Expansión
+            waterMolecules: [],
+            soapMolecules: [],
+            pepperParticles: [],
+            tensionGradient: 0, // 0 = Equitativo, 1 = Centro colapsado (marangoni activo)
+            centerSoapX: 0
+        };
+
+        const width = 800;
+        const height = 600;
+
+        // Configuración de resolución interna del canvas
+        function resize() {
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width * (window.devicePixelRatio || 1);
+            canvas.height = rect.height * (window.devicePixelRatio || 1);
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+        }
+
+        // Inicializador de las moléculas de agua y pimienta
+        function initSimulation() {
+            state.waterMolecules = [];
+            state.soapMolecules = [];
+            state.pepperParticles = [];
+            state.tensionGradient = 0;
+
+            const surfaceY = 280;
+            const rows = 12;
+            const cols = 28;
+            const spacingX = 24;
+            const spacingY = 22;
+            const startX = (width - (cols * spacingX)) / 2;
+
+            // Generar Red de Agua (Puentes de hidrógeno)
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const isSurface = (r === 0);
+                    state.waterMolecules.push({
+                        x: startX + c * spacingX + (r % 2 * 6), // Malla hexagonal leve
+                        y: surfaceY + r * spacingY,
+                        originX: startX + c * spacingX + (r % 2 * 6),
+                        originY: surfaceY + r * spacingY,
+                        vx: 0,
+                        vy: 0,
+                        isSurface: isSurface,
+                        r: isSurface ? 7 : 5,
+                        id: r * cols + c
+                    });
+                }
+            }
+
+            // Generar Pimienta sobre la superficie
+            for (let i = 0; i < 40; i++) {
+                state.pepperParticles.push({
+                    x: width / 2 + (Math.random() - 0.5) * 500,
+                    y: surfaceY - 6,
+                    vx: 0,
+                    vy: 0,
+                    size: 3 + Math.random() * 2
+                });
+            }
+        }
+
+        // Inyectores de texto según el paso
+        const explanations = {
+            1: `
+                <h2 class="text-lg font-bold text-blue-400">Paso 1: La Membrana de Agua de Alta Tensión</h2>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    El agua ($H_2O$) es una molécula <strong>altamente polar</strong>. El oxígeno tiene carga parcial negativa y los hidrógenos carga positiva, lo que genera fuerzas de atracción llamadas <strong>puentes de hidrógeno</strong> (líneas azules).
+                </p>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    En la superficie, al no haber moléculas arriba, el agua se jala con fuerza hacia abajo y hacia los lados, creando una "malla elástica" rígida.
+                </p>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-700/50 text-xs">
+                    <span class="text-yellow-400 font-semibold">¿Por qué flota la pimienta?</span><br>
+                    La pimienta es hidrofóbica y sumamente ligera. No tiene la densidad ni fuerza suficiente para romper los puentes de hidrógeno de la superficie, por lo que reposa sobre esta malla de agua.
+                </div>
+            `,
+            2: `
+                <h2 class="text-lg font-bold text-yellow-400">Paso 2: El Choque del Jabón (Tensioactivo)</h2>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    Al añadir el dedo con jabón en el centro, liberas moléculas de jabón que son <strong>anfipáticas</strong>: tienen una cabeza polar que ama el agua (hidrofílica) y una cola no polar que la repele (hidrofóbica).
+                </p>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    Las colas no polares quieren salir del agua de inmediato, alineándose hacia el aire. Para lograrlo, las moléculas de jabón se <strong>introducen a la fuerza</strong> entre las moléculas de agua superficiales.
+                </p>
+                <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-700/50 text-xs">
+                    <span class="text-blue-400 font-semibold">El colapso de atracción:</span><br>
+                    Al meterse el jabón en medio de las moléculas de agua del centro, <strong>rompe e interrumpe físicamente</strong> las fuerzas de atracción (puentes de hidrógeno). La tensión en el centro cae a cero.
+                </div>
+            `,
+            3: `
+                <h2 class="text-lg font-bold text-green-400">Paso 3: El Efecto Marangoni (El "Tira y Afloja")</h2>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    ¡Aquí ocurre el movimiento! Ahora tienes un desequilibrio: en el centro (con jabón) la tensión es casi nula, pero en los extremos del plato (agua limpia) la tensión sigue siendo <strong>muy alta</strong>.
+                </p>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    Las moléculas de agua limpia de las orillas siguen jalándose fuertemente entre sí. Como la zona central perdió su fuerza cohesiva, <strong>el agua de los bordes literalmente "jala" y arrastra superficialmente</strong> a la capa del centro.
+                </p>
+                <div class="bg-green-950/30 p-3 rounded-xl border border-green-800/50 text-xs">
+                    <span class="text-green-400 font-semibold">La pimienta no corre sola:</span><br>
+                    La pimienta es empujada hacia las orillas porque <strong>la capa de agua superior se está moviendo físicamente hacia afuera</strong>, impulsada por las fuerzas de atracción que siguen intactas en los bordes.
+                </div>
+            `
+        };
+
+        function setStep(stepNum) {
+            state.step = stepNum;
+            
+            // Actualizar botones de pasos
+            document.querySelectorAll('.step-btn').forEach((btn, index) => {
+                if (index + 1 === stepNum) {
+                    btn.className = "step-btn py-2 text-xs font-medium rounded-xl border border-blue-500 bg-blue-950/40 text-blue-300 text-center transition";
+                } else {
+                    btn.className = "step-btn py-2 text-xs font-medium rounded-xl border border-gray-700 hover:border-gray-600 text-gray-400 text-center transition";
+                }
+            });
+
+            // Actualizar contenido explicativo
+            document.getElementById('explanation-content').innerHTML = explanations[stepNum];
+
+            // Ajustar estado de simulación
+            const statusEl = document.getElementById('system-status');
+            if (stepNum === 1) {
+                initSimulation();
+                statusEl.textContent = "Tensión Superficial Alta";
+                statusEl.className = "font-bold text-green-400";
+            } else if (stepNum === 2) {
+                statusEl.textContent = "Tensioactivo Rompiendo Enlaces";
+                statusEl.className = "font-bold text-yellow-400";
+                // Añadir algunas moléculas de jabón suspendidas arriba
+                state.soapMolecules = [];
+                for (let i = 0; i < 8; i++) {
+                    state.soapMolecules.push({
+                        x: width / 2 + (i - 3.5) * 22,
+                        y: 120 + Math.sin(i) * 15,
+                        targetY: 275,
+                        vY: 2 + Math.random() * 1.5,
+                        landed: false
+                    });
+                }
+            } else if (stepNum === 3) {
+                statusEl.textContent = "Arrastre por Efecto Marangoni";
+                statusEl.className = "font-bold text-blue-400 animate-pulse";
+                state.tensionGradient = 1;
+                state.centerSoapX = width / 2;
+            }
+        }
+
+        function updatePhysics() {
+            const surfaceY = 280;
+
+            // Paso 2: Caída del jabón
+            if (state.step === 2) {
+                state.soapMolecules.forEach(soap => {
+                    if (!soap.landed) {
+                        soap.y += soap.vY;
+                        if (soap.y >= soap.targetY) {
+                            soap.y = soap.targetY;
+                            soap.landed = true;
+                            // Al tocar la superficie, activamos mecánicamente el paso 3 progresivamente
+                            setTimeout(() => {
+                                if (state.step === 2) {
+                                    setStep(3);
+                                }
+                            }, 400);
+                        }
+                    }
+                });
+            }
+
+            // Paso 3: Simulación de fuerzas cohesivas y efecto Marangoni (Gradiente de tensión)
+            if (state.tensionGradient > 0) {
+                // Generar una fuerza de repulsión hidrodinámica desde el centro hacia afuera
+                const forceCenter = width / 2;
+                
+                // Mover moléculas de agua superficiales hacia afuera
+                state.waterMolecules.forEach(mol => {
+                    if (mol.isSurface) {
+                        const distToCenter = mol.x - forceCenter;
+                        const distAbs = Math.abs(distToCenter);
+                        
+                        if (distAbs < 380) {
+                            const forceDir = Math.sign(distToCenter);
+                            // La fuerza disminuye conforme se aleja (gradiente)
+                            const pushForce = (1 - (distAbs / 380)) * 6.5;
+                            mol.vx += forceDir * pushForce * 0.15;
+                        }
+                    } else {
+                        // Las moléculas profundas reaccionan por arrastre
+                        const surfaceXAtCol = state.waterMolecules.find(m => m.isSurface && Math.abs(m.originX - mol.originX) < 10)?.x;
+                        if (surfaceXAtCol !== undefined) {
+                            // Flujo rotacional leve (el fondo rellena el centro)
+                            const depthY = mol.y - surfaceY;
+                            const pullX = (surfaceXAtCol - mol.x) * (0.02 / (depthY * 0.05));
+                            mol.vx += pullX;
+                        }
+                    }
+
+                    // Fricción viscosa
+                    mol.vx *= 0.85;
+                    mol.vy *= 0.85;
+
+                    // Aplicar posiciones
+                    mol.x += mol.vx;
+                    mol.y += mol.vy;
+                });
+
+                // Arrastrar la pimienta suspendida en el agua superficial
+                state.pepperParticles.forEach(p => {
+                    const distToCenter = p.x - forceCenter;
+                    const distAbs = Math.abs(distToCenter);
+
+                    if (distAbs < 390) {
+                        const forceDir = Math.sign(distToCenter);
+                        // El agua en movimiento arrastra a la partícula por fricción viscosa
+                        const fluidSpeed = (1 - (distAbs / 390)) * 9.5;
+                        p.vx += forceDir * fluidSpeed * 0.18;
+                    }
+
+                    // Fricción de la pimienta
+                    p.vx *= 0.88;
+                    p.x += p.vx;
+
+                    // Rebote leve en bordes del plato ficticio
+                    if (p.x < 50) { p.x = 50; p.vx *= -0.2; }
+                    if (p.x > width - 50) { p.x = width - 50; p.vx *= -0.2; }
+                });
+
+                // Alinear las moléculas de jabón en el centro empujadas levemente por la expansión
+                state.soapMolecules.forEach(soap => {
+                    soap.y = surfaceY - 5;
+                    // El jabón se expande levemente desde el centro
+                    const distToCenter = soap.x - forceCenter;
+                    soap.x += Math.sign(distToCenter) * 1.5;
+                });
+
+            } else {
+                // Estado 1: Vibración térmica normal y cohesión estable
+                const time = Date.now() * 0.003;
+                state.waterMolecules.forEach((mol, i) => {
+                    // Simular vibración térmica leve
+                    mol.x = mol.originX + Math.sin(time + i) * 1.5;
+                    mol.y = mol.originY + Math.cos(time * 0.8 + i) * 1.2;
+                });
+
+                state.pepperParticles.forEach((p, i) => {
+                    // Pequeña flotación estocástica
+                    p.y = surfaceY - 6 + Math.sin(time + i) * 0.5;
+                });
+            }
+        }
+
+        function render() {
+            // Limpieza del canvas adaptada al pixel ratio de pantallas de alta densidad (Retina, etc.)
+            ctx.save();
+            const ratio = window.devicePixelRatio || 1;
+            ctx.scale(ratio, ratio);
+            
+            // Dibujar fondo elegante
+            ctx.fillStyle = '#0b0f19';
+            ctx.fillRect(0, 0, width, height);
+
+            // Dibujar Puentes de Hidrógeno (enlaces electrostáticos polares)
+            ctx.lineWidth = 1;
+            const cols = 28;
+            for (let i = 0; i < state.waterMolecules.length; i++) {
+                const molA = state.waterMolecules[i];
+                const r = Math.floor(i / cols);
+                const c = i % cols;
+
+                // Enlace horizontal
+                if (c < cols - 1) {
+                    const molB = state.waterMolecules[i + 1];
+                    const dist = Math.hypot(molB.x - molA.x, molB.y - molA.y);
+                    
+                    // Si el jabón está en medio, las líneas se atenúan/rompen
+                    let bondStrength = molA.isSurface ? 0.8 : 0.35;
+                    if (state.tensionGradient > 0) {
+                        const midX = (molA.x + molB.x) / 2;
+                        const distToSoap = Math.abs(midX - width / 2);
+                        if (distToSoap < 180) {
+                            bondStrength *= (distToSoap / 180); // Debilitar progresivamente
+                        }
+                    }
+
+                    if (bondStrength > 0.05) {
+                        ctx.strokeStyle = `rgba(59, 130, 246, ${bondStrength})`;
+                        ctx.beginPath();
+                        ctx.moveTo(molA.x, molA.y);
+                        ctx.lineTo(molB.x, molB.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Dibujar Moléculas de Agua
+            state.waterMolecules.forEach(mol => {
+                ctx.beginPath();
+                ctx.arc(mol.x, mol.y, mol.r, 0, Math.PI * 2);
+                // Si es superficie, pintar de un celeste brillante; si es interior, más apagado
+                ctx.fillStyle = mol.isSurface ? '#3b82f6' : '#1d4ed8';
+                ctx.shadowColor = mol.isSurface ? '#3b82f6' : 'transparent';
+                ctx.shadowBlur = mol.isSurface ? 8 : 0;
+                ctx.fill();
+                ctx.shadowBlur = 0; // Apagar sombras
+            });
+
+            // Dibujar Moléculas de Jabón (Estructura Anfipática: Cabeza amarilla, cola gris)
+            state.soapMolecules.forEach(soap => {
+                // Cola hidrofóbica (repele agua, va al aire)
+                ctx.strokeStyle = '#9ca3af';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(soap.x, soap.y);
+                ctx.lineTo(soap.x, soap.y - 20); // Cola hacia arriba
+                ctx.stroke();
+
+                // Cabeza hidrofílica (polar, se aferra al agua)
+                ctx.beginPath();
+                ctx.arc(soap.x, soap.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#facc15';
+                ctx.fill();
+            });
+
+            // Dibujar Partículas de Pimienta
+            ctx.fillStyle = '#374151'; // Color pimienta molida oscura
+            state.pepperParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Vectores ilustrativos de tensión (Paso 3)
+            if (state.step === 3) {
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)'; // Flecha roja de fuerza
+                ctx.lineWidth = 2.5;
+                // Flecha Izquierda
+                ctx.beginPath();
+                ctx.moveTo(width / 2 - 80, 240);
+                ctx.lineTo(width / 2 - 220, 240);
+                ctx.stroke();
+                // Punta flecha izquierda
+                ctx.beginPath();
+                ctx.moveTo(width / 2 - 220, 240);
+                ctx.lineTo(width / 2 - 210, 235);
+                ctx.lineTo(width / 2 - 210, 245);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
+                ctx.fill();
+
+                // Flecha Derecha
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)';
+                ctx.beginPath();
+                ctx.moveTo(width / 2 + 80, 240);
+                ctx.lineTo(width / 2 + 220, 240);
+                ctx.stroke();
+                // Punta flecha derecha
+                ctx.beginPath();
+                ctx.moveTo(width / 2 + 220, 240);
+                ctx.lineTo(width / 2 + 210, 235);
+                ctx.lineTo(width / 2 + 210, 245);
+                ctx.closePath();
+                ctx.fill();
+
+                // Texto "Fuerza neta hacia los bordes"
+                ctx.fillStyle = '#fca5a5';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText("Fuerza de arrastre (Tira y Afloja)", width / 2, 220);
+            }
+
+            ctx.restore();
+        }
+
+        // Bucle principal de animación y actualización
+        function loop() {
+            updatePhysics();
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        // Listeners e Interacción de la interfaz
+        document.getElementById('btn-reset').addEventListener('click', () => setStep(1));
+        document.getElementById('btn-soap').addEventListener('click', () => setStep(2));
+        document.getElementById('step-1').addEventListener('click', () => setStep(1));
+        document.getElementById('step-2').addEventListener('click', () => setStep(2));
+        document.getElementById('step-3').addEventListener('click', () => setStep(3));
+
+        // Inicializar tamaño y simulación
+        window.addEventListener('resize', resize);
+        resize();
+        setStep(1);
+        loop();
+
+    </script>
+</body>
+</html>
